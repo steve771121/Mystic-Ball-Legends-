@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>幻球傳奇 / Mystic Ball Legends</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a1020;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+  #wrap{height:100%;display:flex;align-items:center;justify-content:center;position:relative;background:
+    radial-gradient(circle at 50% 50%,rgba(75,133,255,.15),transparent 45%),
+    linear-gradient(180deg,#0a1020,#111a32)}
+  canvas{touch-action:none;border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.45);max-width:96vw;max-height:92vh}
+  .hud{position:fixed;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:18px;align-items:center;
+    background:rgba(8,12,24,.72);backdrop-filter:blur(10px);padding:10px 16px;border:1px solid rgba(255,255,255,.12);border-radius:18px;z-index:5}
+  .score{font-size:24px;font-weight:800;min-width:120px;text-align:center}
+  button{border:0;border-radius:14px;padding:10px 14px;font-weight:800;background:#fff;color:#15213c;cursor:pointer}
+  button:disabled{opacity:.45}
+  .tip{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:13px;opacity:.78;text-align:center;max-width:92vw}
+  .skill{position:fixed;right:16px;bottom:54px;background:rgba(8,12,24,.8);border:1px solid rgba(255,255,255,.12);
+    border-radius:18px;padding:12px;width:150px}
+  .skill b{display:block;margin-bottom:6px}
+  .bar{height:8px;border-radius:8px;background:rgba(255,255,255,.13);overflow:hidden}
+  .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff9dca,#ffe0ef)}
+  @media (max-width:650px){.hud{top:8px;gap:8px;padding:8px 10px}.score{font-size:19px;min-width:94px}.skill{right:8px;bottom:44px;width:132px}.tip{bottom:8px}}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="game" width="900" height="1400"></canvas></div>
+<div class="hud">
+  <button id="reset">重新開始</button>
+  <div class="score"><span id="pScore">0</span> ： <span id="aiScore">0</span></div>
+  <button id="skillBtn">皮皮熊技能</button>
+</div>
+<div class="skill">
+  <b>🐻 皮皮熊</b>
+  <div style="font-size:12px;opacity:.75;margin-bottom:7px">點技能後，再點我方半場合法區域</div>
+  <div class="bar"><i id="skillBar"></i></div>
+</div>
+<div class="tip">拖曳下方藍色推盤擊球｜先得 5 分獲勝｜皮皮熊會在場上 5 秒伸長幫忙彈球</div>
+
+<script>
+const c = document.getElementById('game'), ctx = c.getContext('2d');
+const W=c.width,H=c.height, mid=H/2;
+const pScoreEl=document.getElementById('pScore'), aiScoreEl=document.getElementById('aiScore');
+const skillBtn=document.getElementById('skillBtn'), skillBar=document.getElementById('skillBar');
+
+let playerScore=0, aiScore=0, over=false;
+const puck={x:W/2,y:H/2,r:28,vx:0,vy:7.5};
+const player={x:W/2,y:H-190,r:58,targetX:W/2,targetY:H-190};
+const ai={x:W/2,y:190,r:58,vx:0,vy:0};
+
+let pointer=false, skillArmed=false, bear=null, skillReady=true, skillCooldown=9000, cooldownStart=0;
+const goalW=260, wall=26, forbiddenR=185;
+
+function resetPuck(dir=1){
+  puck.x=W/2; puck.y=H/2; puck.vx=(Math.random()-.5)*5; puck.vy=dir*(7+Math.random()*2);
+  player.x=W/2; player.y=H-190; player.targetX=player.x; player.targetY=player.y;
+  ai.x=W/2; ai.y=190;
+}
+function resetGame(){
+  playerScore=0;aiScore=0;over=false;bear=null;skillArmed=false;
+  pScoreEl.textContent=0;aiScoreEl.textContent=0; resetPuck(Math.random()>.5?1:-1);
+}
+document.getElementById('reset').onclick=resetGame;
+
+function canvasPos(e){
+  const r=c.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};
+}
+c.addEventListener('pointerdown',e=>{
+  const p=canvasPos(e);
+  if(skillArmed){
+    const gx=W/2, gy=H-45;
+    const d=Math.hypot(p.x-gx,p.y-gy);
+    if(p.y>mid+30 && d>forbiddenR){
+      bear={x:p.x,y:p.y,t:performance.now(),phase:0};
+      skillArmed=false; skillReady=false; cooldownStart=performance.now();
+    }
+    return;
+  }
+  pointer=true; c.setPointerCapture(e.pointerId);
+  player.targetX=p.x; player.targetY=p.y;
+});
+c.addEventListener('pointermove',e=>{
+  if(!pointer) return;
+  const p=canvasPos(e);
+  player.targetX=Math.max(wall+player.r,Math.min(W-wall-player.r,p.x));
+  player.targetY=Math.max(mid+player.r+15,Math.min(H-wall-player.r,p.y));
+});
+c.addEventListener('pointerup',()=>pointer=false);
+skillBtn.onclick=()=>{ if(skillReady && !over) skillArmed=!skillArmed; };
+
+function collideCircle(a,b,boost=1){
+  let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),min=a.r+b.r;
+  if(d===0)d=.001;
+  if(d<min){
+    const nx=dx/d,ny=dy/d,overlap=min-d;
+    b.x+=nx*overlap; b.y+=ny*overlap;
+    const rvx=b.vx-(a.vx||0), rvy=b.vy-(a.vy||0);
+    const rel=rvx*nx+rvy*ny;
+    if(rel<0){
+      b.vx-=1.9*rel*nx*boost; b.vy-=1.9*rel*ny*boost;
+      b.vx+=(a.vx||0)*.25; b.vy+=(a.vy||0)*.25;
+    }
+  }
+}
+function update(dt,now){
+  if(over)return;
+
+  const ox=player.x, oy=player.y;
+  player.x += (player.targetX-player.x)*Math.min(1,dt*.018);
+  player.y += (player.targetY-player.y)*Math.min(1,dt*.018);
+  player.vx=(player.x-ox)/(dt/16.67); player.vy=(player.y-oy)/(dt/16.67);
+
+  const aox=ai.x,aoy=ai.y;
+  const tx = puck.y<mid ? puck.x : W/2;
+  const ty = puck.y<mid ? Math.max(120,Math.min(mid-110,puck.y-115)) : 190;
+  const aiSpeed=0.0068*dt;
+  ai.x += (tx-ai.x)*Math.min(.18,aiSpeed);
+  ai.y += (ty-ai.y)*Math.min(.14,aiSpeed);
+  ai.x=Math.max(wall+ai.r,Math.min(W-wall-ai.r,ai.x));
+  ai.y=Math.max(wall+ai.r,Math.min(mid-ai.r-15,ai.y));
+  ai.vx=(ai.x-aox)/(dt/16.67); ai.vy=(ai.y-aoy)/(dt/16.67);
+
+  puck.x+=puck.vx*(dt/16.67); puck.y+=puck.vy*(dt/16.67);
+  puck.vx*=Math.pow(.9992,dt/16.67); puck.vy*=Math.pow(.9992,dt/16.67);
+
+  const inGoalX = puck.x>W/2-goalW/2 && puck.x<W/2+goalW/2;
+  if(puck.x-puck.r<wall){puck.x=wall+puck.r;puck.vx=Math.abs(puck.vx)}
+  if(puck.x+puck.r>W-wall){puck.x=W-wall-puck.r;puck.vx=-Math.abs(puck.vx)}
+  if(!inGoalX && puck.y-puck.r<wall){puck.y=wall+puck.r;puck.vy=Math.abs(puck.vy)}
+  if(!inGoalX && puck.y+puck.r>H-wall){puck.y=H-wall-puck.r;puck.vy=-Math.abs(puck.vy)}
+
+  collideCircle(player,puck,1.1); collideCircle(ai,puck,1.05);
+
+  if(bear){
+    const age=now-bear.t;
+    bear.phase=age/250;
+    if(age>5000) bear=null;
+    else{
+      const len=82 + 74*(.5+.5*Math.sin(bear.phase*2.6));
+      const ang=-Math.PI/2 + .85*Math.sin(bear.phase*.9);
+      const tip={x:bear.x+Math.cos(ang)*len,y:bear.y+Math.sin(ang)*len,r:34,vx:Math.cos(ang)*4,vy:Math.sin(ang)*4};
+      collideCircle(tip,puck,1.25);
+    }
+  }
+
+  if(puck.y<-55 && inGoalX){ playerScore++; pScoreEl.textContent=playerScore; checkWin(); resetPuck(1); }
+  if(puck.y>H+55 && inGoalX){ aiScore++; aiScoreEl.textContent=aiScore; checkWin(); resetPuck(-1); }
+
+  const sp=Math.hypot(puck.vx,puck.vy), max=24;
+  if(sp>max){puck.vx=puck.vx/sp*max;puck.vy=puck.vy/sp*max}
+
+  if(!skillReady){
+    const p=Math.min(1,(now-cooldownStart)/skillCooldown);
+    skillBar.style.width=(p*100)+'%';
+    if(p>=1){skillReady=true;skillBar.style.width='100%'}
+  }
+  skillBtn.disabled=!skillReady;
+  skillBtn.textContent=skillArmed?'點場上位置':'皮皮熊技能';
+}
+function checkWin(){
+  if(playerScore>=5 || aiScore>=5){
+    over=true;
+    setTimeout(()=>alert((playerScore>aiScore?'你贏了！':'電腦獲勝！')+'  按「重新開始」再玩一次。'),60);
+  }
+}
+
+function roundedRect(x,y,w,h,r,fill,stroke){
+  ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill)ctx.fill();if(stroke)ctx.stroke();
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#152d57');g.addColorStop(.5,'#102342');g.addColorStop(1,'#163267');
+  ctx.fillStyle=g;roundedRect(10,10,W-20,H-20,42,true,false);
+
+  ctx.strokeStyle='rgba(155,220,255,.85)';ctx.lineWidth=8;roundedRect(wall,wall,W-wall*2,H-wall*2,32,false,true);
+  ctx.beginPath();ctx.moveTo(wall,mid);ctx.lineTo(W-wall,mid);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=5;ctx.stroke();
+  ctx.beginPath();ctx.arc(W/2,mid,125,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.22)';ctx.stroke();
+
+  ctx.fillStyle='rgba(255,85,110,.25)';ctx.fillRect(W/2-goalW/2,0,goalW,48);
+  ctx.fillStyle='rgba(75,170,255,.28)';ctx.fillRect(W/2-goalW/2,H-48,goalW,48);
+
+  ctx.beginPath();ctx.arc(W/2,H-45,forbiddenR,Math.PI,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.045)';ctx.fill();
+  if(skillArmed){ctx.strokeStyle='rgba(255,211,230,.75)';ctx.lineWidth=5;ctx.setLineDash([14,12]);ctx.stroke();ctx.setLineDash([])}
+
+  if(bear){
+    const len=82+74*(.5+.5*Math.sin(bear.phase*2.6));
+    const ang=-Math.PI/2+.85*Math.sin(bear.phase*.9);
+    ctx.save();ctx.translate(bear.x,bear.y);ctx.rotate(ang);
+    ctx.strokeStyle='#f2b6cf';ctx.lineWidth=58;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(len,0);ctx.stroke();
+    ctx.fillStyle='#f8d4e2';ctx.beginPath();ctx.arc(0,0,48,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#7a4b5b';ctx.beginPath();ctx.arc(-15,-8,4,0,Math.PI*2);ctx.arc(-15,8,4,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  function disk(o,fill,ring){
+    ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=18;ctx.shadowOffsetY=8;
+    ctx.fillStyle=fill;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill();
+    ctx.shadowColor='transparent';ctx.strokeStyle=ring;ctx.lineWidth=7;ctx.stroke();
+  }
+  disk(ai,'#ff5f78','#ffc2ca'); disk(player,'#44a8ff','#cfeeff');
+
+  ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=16;ctx.shadowOffsetY=7;
+  ctx.fillStyle='#f6fbff';ctx.beginPath();ctx.arc(puck.x,puck.y,puck.r,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor='transparent';ctx.strokeStyle='#8bc9ff';ctx.lineWidth=5;ctx.stroke();
+
+  ctx.font='58px sans-serif';ctx.fillText('🐻',W-105,H-85);
+  ctx.font='18px sans-serif';ctx.fillStyle='rgba(255,255,255,.8)';ctx.fillText('皮皮熊',W-120,H-35);
+}
+let last=performance.now();
+function loop(now){const dt=Math.min(32,now-last);last=now;update(dt,now);draw();requestAnimationFrame(loop)}
+resetGame();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
