@@ -11,3 +11,17 @@ body.playing #scene{mask-image:none}
 @media(max-width:800px){body:not(.playing) #scene{width:56%;top:85px;height:265px}h1{font-size:32px}.intro{width:48%}.arena-label{top:298px}.arena-card{font-size:9px}.arena-card>span:last-child{display:block;min-height:30px}.arena-card small{margin-top:6px}.mode-tabs{z-index:3;background:#11252beb}.intro p{font-size:10px}.arena-heading>span:last-child{max-width:135px;text-align:right}}
 
 .section-heading>span:last-child,footer span:last-child{font-family:'Noto Sans TC',sans-serif}
+
+/* The match owns the viewport; compact HUD stays outside the touch surface. */
+body.playing header{display:none}
+body.playing #scene{inset:82px 0 78px;height:auto;width:100%;mask-image:none}
+body.playing #hud{inset:0}
+body.playing .scoreboard{top:max(8px,env(safe-area-inset-top));padding:7px 20px;gap:22px}
+body.playing .scoreboard b{font-size:25px;margin-top:2px}
+body.playing .scoreboard strong{font-size:10px;margin:3px 0}
+body.playing .game-controls{top:18px;left:12px;flex-direction:row;gap:7px}
+body.playing .bottom-hud{bottom:max(9px,env(safe-area-inset-bottom))}
+body.playing #wind-label{top:80px}
+body.playing #network-label{top:98px}
+@media(max-width:600px){body.playing .scoreboard{min-width:214px;gap:12px;padding:6px 9px;left:auto;right:10px;transform:none}body.playing .scoreboard>div{min-width:63px}body.playing .game-controls{top:20px;left:9px;flex-direction:column;gap:7px}body.playing #scene{top:max(82px,calc(env(safe-area-inset-top) + 72px));bottom:max(78px,calc(env(safe-area-inset-bottom) + 68px))}body.playing #hint{max-width:135px;font-size:9px}body.playing #network-label{top:75px}body.playing #wind-label{top:93px}}
+@media(max-height:550px) and (orientation:landscape){body.playing #scene{inset:6px 150px 6px 150px;height:auto;width:auto}body.playing .scoreboard{left:8px;right:auto;top:8px;min-width:0;transform:none;gap:5px;padding:6px}body.playing .scoreboard>div{min-width:38px}body.playing .game-controls{top:110px;left:12px}body.playing .bottom-hud{left:10px;right:10px}body.playing .skill-orb{max-width:140px;gap:4px;padding:8px}body.playing .skill-orb small{font-size:8px}body.playing #hint{max-width:125px}body.playing #network-label{top:20px;right:8px}body.playing #wind-label{top:45px;right:8px}}

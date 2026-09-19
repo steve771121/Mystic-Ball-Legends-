@@ -1,4 +1,4 @@
-# 幻球傳奇 / Mystic Ball Legends — Alpha 0.3
+# 幻球傳奇 / Mystic Ball Legends — Alpha 0.3.1
 
 Static ES-module 3D air-hockey game for the existing GitHub Pages URL.
 
@@ -58,3 +58,10 @@ Local signaling completed offer/answer exchange, but this sandbox produced no IC
 end-to-end WebRTC gameplay remains unverified. Public Internet / cellular interoperability
 requires a real-device test. Room protocol tests use an in-memory transport and do not prove
 network connectivity. This is an Alpha release, not a production multiplayer launch.
+
+## Alpha 0.3.1
+Rounded 1.45-unit corner rails share geometry with puck/mallet boundary constraints.
+Arc-normal reflection and low-speed release prevent resting in sharp corners.
+An adaptive orthographic match camera fills the available touch area; the compact HUD
+sits outside the play surface. Portrait, landscape and host/guest input projection are tested.
+The user confirmed live multiplayer worked on Alpha 0.3. Networking is unchanged.

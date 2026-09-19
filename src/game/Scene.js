@@ -1,3 +1,4 @@
+import {playCamera} from './Camera.js';
 import * as T from '../../vendor/three.module.js';
 import {arena,mallet} from './Arena.js';
 import {character,animateCharacter} from '../characters/Characters.js';
@@ -10,8 +11,9 @@ export class Scene {
  this.effects=[];this.skillMeshes=[null,null];this.ray=new T.Raycaster();this.plane=new T.Plane(new T.Vector3(0,1,0),-.55);this.side=1;this.mode='menu';this.configure('classic',['bear','cat']);new ResizeObserver(()=>this.resize()).observe(host);this.resize();}
  configure(type,chars){if(this.rink){this.scene.remove(this.rink.group);dispose(this.rink.group);}this.rink=arena(type);this.scene.add(this.rink.group);this.type=type;for(const c of this.cheers||[]){this.scene.remove(c);dispose(c);}this.cheers=chars.map((t,i)=>{let g=character(t);g.scale.setScalar(.8);g.position.set(i===0?6.1:-6.1,.4,i===0?5:-5);g.userData.baseY=.4;g.rotation.y=i===0?-.45:Math.PI-.45;this.scene.add(g);return g;});this.characters=chars;this.clearSkills();}
  clearSkills(){for(let i=0;i<2;i++)if(this.skillMeshes[i]){this.scene.remove(this.skillMeshes[i]);dispose(this.skillMeshes[i]);this.skillMeshes[i]=null;}}
- resize(){let w=this.host.clientWidth,h=this.host.clientHeight;if(!w||!h)return;this.renderer.setSize(w,h,false);this.camera.aspect=w/h;const mobile=w/h<.7;const distance=mobile?38:26;this.camera.position.set(this.mode==='menu'?4:0,distance*.79,this.side*distance*.73);this.camera.lookAt(0,0,0);this.camera.updateProjectionMatrix();}
- setMode(mode,side=1){this.mode=mode;this.side=side;this.resize();}
+ resize(){let w=this.host.clientWidth,h=this.host.clientHeight;if(!w||!h)return;this.renderer.setSize(w,h,false);if(this.mode==='play'){this.camera=playCamera(w,h,this.side);}else{this.camera=new T.PerspectiveCamera(40,w/h,.1,100);const distance=w/h<.7?38:26;this.camera.position.set(4,distance*.79,distance*.73);this.camera.lookAt(0,0,0);this.camera.updateProjectionMatrix();}this.camera.updateMatrixWorld();}
+
+ setMode(mode,side=1){this.mode=mode;this.side=side;if(mode==='play')this.cheers.forEach((g,i)=>{g.scale.setScalar(.55);g.position.set(i===0?4.6:-4.6,.4,i===0?8.55:-8.55);});this.resize();}
  point(e){let b=this.renderer.domElement.getBoundingClientRect();this.ray.setFromCamera(new T.Vector2((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1),this.camera);let p=new T.Vector3();return this.ray.ray.intersectPlane(this.plane,p)?p:null;}
  placement(armed,point){if(this.zone){this.scene.remove(this.zone);dispose(this.zone);this.zone=null;}if(!armed)return;this.zone=new T.Group();this.scene.add(this.zone);const ring=(r,x,z,color,opacity)=>{let m=new T.Mesh(new T.RingGeometry(r-.045,r,64),new T.MeshBasicMaterial({color,transparent:true,opacity,side:T.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(x,.48,z);this.zone.add(m);};ring(2.7,0,this.side*8,0xff607b,.9);for(let x=-3;x<=3;x+=1.5)for(let z=1.5;z<=5;z+=1.5)ring(.08,x,z*this.side,0x9bffd9,.6);if(point)ring(1.9,point.x,point.z,legalSkill(point.x,point.z,this.side)?0x93ffd4:0xff6379,.9);}
  burst(x,z,color){for(let i=0;i<30;i++){let m=new T.Mesh(new T.BoxGeometry(.08,.08,.08),new T.MeshBasicMaterial({color}));m.position.set(x,.7,z);this.scene.add(m);this.effects.push({m,v:new T.Vector3((Math.random()-.5)*9,Math.random()*6+1,(Math.random()-.5)*9),life:.7});}}

@@ -10,6 +10,6 @@ export const ARENAS = {
  desert:{name:'流沙神殿',en:'DESERT',desc:'流沙減速・路線博弈',color:'#efc586',surface:0x806044,drag:.13,max:22},
  wind:{name:'魔風谷',en:'WIND VALLEY',desc:'變向氣流・預判反擊',color:'#c5e9a1',surface:0x416754,drag:.08,max:24}
 };
-export const W=10,H=16,GOAL=3.4,STEP=1/240,COOLDOWN=14;
+export const W=10,H=16,CORNER_RADIUS=1.45,GOAL=3.4,STEP=1/240,COOLDOWN=14;
 export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export function legalSkill(x,z,side){return Number.isFinite(x)&&Number.isFinite(z)&&Math.abs(x)<=3.8 && z*side>=1.2 && z*side<=5.3 && Math.hypot(x,z-side*8)>2.7;}
