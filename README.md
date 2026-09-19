@@ -1,4 +1,4 @@
-# 幻球傳奇 / Mystic Ball Legends — Alpha 0.3.1
+# 幻球傳奇 / Mystic Ball Legends — Alpha 0.3.2
 
 Static ES-module 3D air-hockey game for the existing GitHub Pages URL.
 
@@ -65,3 +65,12 @@ Arc-normal reflection and low-speed release prevent resting in sharp corners.
 An adaptive orthographic match camera fills the available touch area; the compact HUD
 sits outside the play surface. Portrait, landscape and host/guest input projection are tested.
 The user confirmed live multiplayer worked on Alpha 0.3. Networking is unchanged.
+
+## Alpha 0.3.2
+After results, either player can return both peers to the existing lobby. The host can
+change the arena, and each player selects only their own character. Any selection
+change resets both Ready flags. Host-owned settings revisions reject stale Ready
+messages; guest selection requires acknowledgement before Ready. Gameplay locks all
+selections. Both peers then start with an identical fresh match configuration.
+Room protocol version 4 isolates incompatible clients; both players should refresh
+once after updating. Subsequent matches keep the same room and connection.
