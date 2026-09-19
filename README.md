@@ -1,4 +1,4 @@
-# 幻球傳奇 / Mystic Ball Legends — Alpha 0.3.2
+# 幻球傳奇 / Mystic Ball Legends — Alpha 0.3.3
 
 Static ES-module 3D air-hockey game for the existing GitHub Pages URL.
 
@@ -74,3 +74,13 @@ messages; guest selection requires acknowledgement before Ready. Gameplay locks 
 selections. Both peers then start with an identical fresh match configuration.
 Room protocol version 4 isolates incompatible clients; both players should refresh
 once after updating. Subsequent matches keep the same room and connection.
+
+## Release assets / mobile cache (Alpha 0.3.3)
+After updating package.json version, run `npm run release:assets` before publishing.
+This stamps the HTML, stylesheet and all local static/dynamic module imports with the
+same release query, and writes version.json. The bootstrap checks that manifest with
+a unique query and no-store, with a 2.5-second offline fallback. A stale installed
+bootstrap navigates to a versioned page only before starting play (or restoring a menu
+from the browser back-forward cache); live matches and rooms are never interrupted.
+To recover browsers still holding pre-0.3.3 HTML, open `/?v=0.3.3` once.
+The version badge now remains visible on mobile.

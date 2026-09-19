@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
+const version=JSON.parse(fs.readFileSync('package.json')).version;
+function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]);}
+test('all application imports and HTML entrypoints use the release version',()=>{for(const p of ['index.html',...walk('src').filter(p=>/\.(js|css)$/.test(p))]){const text=fs.readFileSync(p,'utf8');for(const m of text.matchAll(/(["'])(\.{1,2}\/[^"'\s]+\.(?:js|css)(?:\?[^"'\s]+)?)\1/g)){assert.equal(new URL(m[2],'https://example.test/').searchParams.get('v'),version,`${p}: ${m[2]}`);}}assert.equal(JSON.parse(fs.readFileSync('version.json')).version,version);});

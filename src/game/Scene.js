@@ -1,8 +1,8 @@
-import {playCamera} from './Camera.js';
-import * as T from '../../vendor/three.module.js';
-import {arena,mallet} from './Arena.js';
-import {character,animateCharacter} from '../characters/Characters.js';
-import {ARENAS,legalSkill} from '../config/game.js';
+import {playCamera} from './Camera.js?v=0.3.3';
+import * as T from '../../vendor/three.module.js?v=0.3.3';
+import {arena,mallet} from './Arena.js?v=0.3.3';
+import {character,animateCharacter} from '../characters/Characters.js?v=0.3.3';
+import {ARENAS,legalSkill} from '../config/game.js?v=0.3.3';
 function dispose(group){group.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});}
 export class Scene {
  constructor(host){this.host=host;this.scene=new T.Scene();this.scene.background=new T.Color(0x0b171d);this.scene.fog=new T.Fog(0x0b171d,35,65);this.camera=new T.PerspectiveCamera(40,1,.1,100);this.renderer=new T.WebGLRenderer({antialias:true,alpha:false});this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.4;host.append(this.renderer.domElement);this.scene.add(new T.HemisphereLight(0xd7fff8,0x47405a,2.8));let key=new T.DirectionalLight(0xfff3df,4);key.position.set(-7,16,8);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-12,right:12,top:14,bottom:-14});key.shadow.bias=-.001;this.scene.add(key);let fill=new T.PointLight(0x69dcc4,80,30);fill.position.set(7,5,-5);this.scene.add(fill);

@@ -1,10 +1,10 @@
-import {renderLobby} from './ui/Lobby.js';
-import * as T from '../vendor/three.module.js';
-import {CHARACTERS,ARENAS,STEP,COOLDOWN,clamp} from './config/game.js';
-import {character} from './characters/Characters.js';
-import {Physics} from './game/Physics.js';
-import {Scene} from './game/Scene.js';
-import {RoomService} from './multiplayer/RoomService.js';
+import {renderLobby} from './ui/Lobby.js?v=0.3.3';
+import * as T from '../vendor/three.module.js?v=0.3.3';
+import {CHARACTERS,ARENAS,STEP,COOLDOWN,clamp} from './config/game.js?v=0.3.3';
+import {character} from './characters/Characters.js?v=0.3.3';
+import {Physics} from './game/Physics.js?v=0.3.3';
+import {Scene} from './game/Scene.js?v=0.3.3';
+import {RoomService} from './multiplayer/RoomService.js?v=0.3.3';
 const $=s=>document.querySelector(s);let selected='bear',arena='classic',mode='ai',running=false,armed=false,dragging=false,room=null,playerIndex=0,paused=false,finished=false,lastGoal=0,accumulator=0,last=performance.now(),sendClock=0,frameTime=0,sound=false,audio=null,disconnectShown=false;
 const view=new Scene($('#scene'));let game=new Physics({});
 function toast(text){$('#toast').textContent=text;$('#toast').style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').style.display='none',3500);}
@@ -38,7 +38,7 @@ function arm(){if(!running||paused||game.phase!=='playing'||!game.config.skills|
 $('#skill').onclick=arm;
 const canvas=view.renderer.domElement;
 function move(p){if(room&&!room.host)room.send({type:'input',x:p.x,z:p.z});else game.input(playerIndex,p.x,p.z);}
-canvas.addEventListener('pointerdown',e=>{if(!running||paused||game.phase!=='playing')return;let p=view.point(e);if(!p)return;if(armed){if(room&&!room.host){import('./config/game.js').then(({legalSkill})=>{if(!legalSkill(p.x,p.z,-1)){toast('請放在綠色合法區域，避開球門');return;}room.send({type:'skill',x:p.x,z:p.z});armed=false;view.placement(false);});}else if(game.activate(playerIndex,p.x,p.z)){armed=false;view.placement(false);beep(780);}else toast('請放在綠色合法區域，避開球門');return;}dragging=true;canvas.setPointerCapture(e.pointerId);move(p);});
+canvas.addEventListener('pointerdown',e=>{if(!running||paused||game.phase!=='playing')return;let p=view.point(e);if(!p)return;if(armed){if(room&&!room.host){import('./config/game.js?v=0.3.3').then(({legalSkill})=>{if(!legalSkill(p.x,p.z,-1)){toast('請放在綠色合法區域，避開球門');return;}room.send({type:'skill',x:p.x,z:p.z});armed=false;view.placement(false);});}else if(game.activate(playerIndex,p.x,p.z)){armed=false;view.placement(false);beep(780);}else toast('請放在綠色合法區域，避開球門');return;}dragging=true;canvas.setPointerCapture(e.pointerId);move(p);});
 canvas.addEventListener('pointermove',e=>{if(!running||paused)return;let p=view.point(e);if(!p)return;if(armed)view.placement(true,p);else if(dragging)move(p);});for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,()=>dragging=false);
 const keys=new Set();addEventListener('keydown',e=>{if(!running||$('#dialog').open)return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','w','a','s','d'].includes(e.key)){e.preventDefault();keys.add(e.key);if(e.key===' '&&!e.repeat)arm();}});addEventListener('keyup',e=>keys.delete(e.key));addEventListener('blur',()=>{keys.clear();dragging=false;if(running&&!room)paused=true;});document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!room)paused=true;});
 function finish(){finished=true;room?.markFinished();let win=game.winner===playerIndex;beep(win?880:220,.4);dialog(`<div class="eyebrow">MATCH COMPLETE</div><h2>${win?'這一場，由你寫下。':'下一球，再扳回來。'}</h2><div class="room-code">${game.scores[playerIndex]} : ${game.scores[1-playerIndex]}</div><p style="text-align:center">${win?'漂亮的反彈！你贏得了這場對決。':'對手拿下了勝利，再試試不同夥伴與戰術。'}</p><button id="rematch" class="primary">${room?'回房間 · 選擇夥伴與競技場':'再來一局'}</button><button id="back-home" class="secondary">回首頁</button>`,false);$('#rematch').onclick=()=>{if(room)room.rematch();else start(game.config);};$('#back-home').onclick=home;}
