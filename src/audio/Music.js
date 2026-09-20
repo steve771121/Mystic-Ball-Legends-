@@ -1,6 +1,9 @@
 export const MUSIC_TRACKS={
  classic:new URL('../../assets/music/neon-court-loop.mp3',import.meta.url).href,
- space:new URL('../../assets/music/pocket-groove-loop.mp3',import.meta.url).href
+ space:new URL('../../assets/music/pocket-groove-loop.mp3',import.meta.url).href,
+ ice:new URL('../../assets/music/blue-hour-loop.mp3',import.meta.url).href,
+ desert:new URL('../../assets/music/velvet-window-loop.mp3',import.meta.url).href,
+ wind:new URL('../../assets/music/cactus-express-loop.mp3',import.meta.url).href
 };
 // One looping source; async loads are fenced so old arenas never restart playback.
 export class Music {
