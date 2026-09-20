@@ -1,1 +1,1 @@
-{"name": "mystic-ball-legends", "version": "0.3.3", "private": true, "type": "module", "scripts": {"test": "node --test tests/*.test.js", "start": "python3 -m http.server 4173", "release:assets": "node scripts/version-assets.mjs"}}
+{"name": "mystic-ball-legends", "version": "0.4.0", "private": true, "type": "module", "scripts": {"test": "node --test tests/*.test.js", "start": "python3 -m http.server 4173", "release:assets": "node scripts/version-assets.mjs"}}

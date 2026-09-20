@@ -5,7 +5,7 @@ export const CHARACTERS = {
 };
 export const ARENAS = {
  classic:{name:'經典競技場',en:'CLASSIC',desc:'標準球速・純粹對決',color:'#8ddfd0',surface:0x184e53,drag:.11,max:22},
- space:{name:'星際漫遊',en:'SPACE',desc:'低阻力・長距離滑行',color:'#a0aaff',surface:0x292452,drag:.025,max:24},
+ space:{name:'星際漫遊',en:'SPACE',desc:'黑洞傳送・低阻力滑行',color:'#a0aaff',surface:0x292452,drag:.025,max:24},
  ice:{name:'極光冰原',en:'GLACIER',desc:'冰面加速・快速攻防',color:'#a4e5ff',surface:0x508797,drag:.015,max:28},
  desert:{name:'流沙神殿',en:'DESERT',desc:'流沙減速・路線博弈',color:'#efc586',surface:0x806044,drag:.13,max:22},
  wind:{name:'魔風谷',en:'WIND VALLEY',desc:'變向氣流・預判反擊',color:'#c5e9a1',surface:0x416754,drag:.08,max:24}
