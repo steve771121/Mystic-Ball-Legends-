@@ -1,5 +1,5 @@
-import * as T from '../../vendor/three.module.js?v=0.6.0';
-import {ARENAS,GOAL,CORNER_RADIUS,MALLET_SCALE} from '../config/game.js?v=0.6.0';
+import * as T from '../../vendor/three.module.js?v=0.6.1';
+import {ARENAS,GOAL,CORNER_RADIUS,MALLET_SCALE} from '../config/game.js?v=0.6.1';
 export function arena(type){const group=new T.Group(),cfg=ARENAS[type];
  const material=(color,metalness=.4,roughness=.3)=>new T.MeshStandardMaterial({color,metalness,roughness});
  const glow=color=>new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.7,roughness:.3});

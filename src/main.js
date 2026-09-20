@@ -1,10 +1,10 @@
-import {renderLobby} from './ui/Lobby.js?v=0.6.0';
-import * as T from '../vendor/three.module.js?v=0.6.0';
-import {CHARACTERS,ARENAS,STEP,COOLDOWN,clamp} from './config/game.js?v=0.6.0';
-import {character} from './characters/Characters.js?v=0.6.0';
-import {Physics} from './game/Physics.js?v=0.6.0';
-import {Scene} from './game/Scene.js?v=0.6.0';
-import {RoomService} from './multiplayer/RoomService.js?v=0.6.0';
+import {renderLobby} from './ui/Lobby.js?v=0.6.1';
+import * as T from '../vendor/three.module.js?v=0.6.1';
+import {CHARACTERS,ARENAS,STEP,COOLDOWN,clamp} from './config/game.js?v=0.6.1';
+import {character} from './characters/Characters.js?v=0.6.1';
+import {Physics} from './game/Physics.js?v=0.6.1';
+import {Scene} from './game/Scene.js?v=0.6.1';
+import {RoomService} from './multiplayer/RoomService.js?v=0.6.1';
 const $=s=>document.querySelector(s);let selected='bear',arena='classic',mode='ai',running=false,armed=false,dragging=false,room=null,playerIndex=0,paused=false,finished=false,lastGoal=0,lastImpactId=0,accumulator=0,last=performance.now(),sendClock=0,frameTime=0,sound=false,audio=null,disconnectShown=false;
 const view=new Scene($('#scene'));let game=new Physics({});
 function toast(text){$('#toast').textContent=text;$('#toast').style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').style.display='none',3500);}
@@ -26,7 +26,7 @@ function closeDialog(){if(room&&!running){room.close();room=null;}$('#dialog').c
 $('.dialog-close').onclick=closeDialog;$('#dialog').addEventListener('cancel',e=>{e.preventDefault();if(!$('.dialog-close').hidden)closeDialog();});
 $('#help').onclick=()=>{if(running&&!room){paused=true;}dialog(`<div class="eyebrow">HOW TO PLAY</div><h2>反彈，就是你的武器。</h2><p>在我方半場拖曳推盤。快速揮動會打出更強的擊球；善用兩側牆壁製造角度。</p><p>點右下角夥伴，再點綠色合法區域施放技能。每次持續 5 秒，冷卻 14 秒。紅色球門禁區無法放置。</p><p>🐻 皮皮熊：半徑內伸長身體反彈球。<br>🐤 吸吸鴨：吸住球，等你撞擊射出。<br>🐱 跳跳貓：後半場跳動，攔截來球。</p><p>桌機：拖曳或方向鍵 / WASD；空白鍵準備技能。<br>手機：手指滑動推盤，點角色施放。<br>先達到設定分數獲勝。</p><button id="help-done" class="primary">我準備好了</button>`);$('#help-done').onclick=()=>{$('#dialog').close();paused=false;};};
 $('#dialog').addEventListener('close',()=>{if(running&&!finished)paused=false;});
-$('#sound').onclick=()=>{sound=!sound;$('#sound').textContent=sound?'♫':'♪';$('#sound').setAttribute('aria-label',sound?'關閉音效':'開啟音效');beep();};
+$('#sound').onclick=()=>{sound=!sound;$('#sound').classList.toggle('is-muted',!sound);$('#sound').setAttribute('aria-pressed',String(sound));$('#sound').title=sound?'音效已開啟':'音效已關閉';$('#sound').setAttribute('aria-label',sound?'關閉音效':'開啟音效');beep();};
 function start(c){$('#dialog').close();running=true;finished=false;paused=false;disconnectShown=false;armed=false;lastGoal=0;lastImpactId=0;accumulator=0;playerIndex=room&&!room.host?1:0;game=new Physics(c);view.configure(c.arena,c.characters);view.remote=!!room&&!room.host;document.body.classList.add('playing');$('#menu').hidden=true;$('#hud').hidden=false;view.setMode('play',playerIndex===0?1:-1);$('#pause').hidden=!!room;$('#match-arena').textContent=ARENAS[c.arena].name;$('#match-rule').textContent=`先得 ${c.target} 分`;$('#player-label').textContent='你 · '+CHARACTERS[c.characters[playerIndex]].name;$('#opponent-label').textContent=(room?'對手 · ':'電腦 · ')+CHARACTERS[c.characters[1-playerIndex]].name;$('#skill-icon').innerHTML='<img alt="角色" src="'+pics[c.characters[playerIndex]]+'" style="width:45px;height:45px;object-fit:contain">';$('#skill-name').textContent=CHARACTERS[c.characters[playerIndex]].title;$('#network-label').textContent=room?'正在同步':'';view.placement(false);}
 function home(){room?.close();room=null;running=false;paused=false;armed=false;dragging=false;$('#dialog').close();document.body.classList.remove('playing');$('#menu').hidden=false;$('#hud').hidden=true;view.setMode('menu');view.placement(false);preview();}
 $('#leave').onclick=()=>{if(!room)paused=true;dialog('<h2>離開這場對戰？</h2><p>目前比分不會保留。</p><button id="leave-yes" class="primary">離開對戰</button><button id="leave-no" class="secondary">繼續比賽</button>');$('#leave-yes').onclick=home;$('#leave-no').onclick=()=>{$('#dialog').close();paused=false;};};
@@ -41,7 +41,7 @@ function arm(){if(!running||paused||game.phase!=='playing'||!game.config.skills|
 $('#skill').onclick=arm;
 const canvas=view.renderer.domElement;
 function move(p){if(room&&!room.host)room.send({type:'input',x:p.x,z:p.z});else game.input(playerIndex,p.x,p.z);}
-canvas.addEventListener('pointerdown',e=>{if(!running||paused||game.phase!=='playing')return;let p=view.point(e);if(!p)return;if(armed){if(room&&!room.host){import('./config/game.js?v=0.6.0').then(({legalSkill})=>{if(!legalSkill(p.x,p.z,-1)){toast('請放在綠色合法區域，避開球門');return;}room.send({type:'skill',x:p.x,z:p.z});armed=false;view.placement(false);});}else if(game.activate(playerIndex,p.x,p.z)){armed=false;view.placement(false);beep(780);}else toast('請放在綠色合法區域，避開球門');return;}dragging=true;canvas.setPointerCapture(e.pointerId);move(p);});
+canvas.addEventListener('pointerdown',e=>{if(!running||paused||game.phase!=='playing')return;let p=view.point(e);if(!p)return;if(armed){if(room&&!room.host){import('./config/game.js?v=0.6.1').then(({legalSkill})=>{if(!legalSkill(p.x,p.z,-1)){toast('請放在綠色合法區域，避開球門');return;}room.send({type:'skill',x:p.x,z:p.z});armed=false;view.placement(false);});}else if(game.activate(playerIndex,p.x,p.z)){armed=false;view.placement(false);beep(780);}else toast('請放在綠色合法區域，避開球門');return;}dragging=true;canvas.setPointerCapture(e.pointerId);move(p);});
 canvas.addEventListener('pointermove',e=>{if(!running||paused)return;let p=view.point(e);if(!p)return;if(armed)view.placement(true,p);else if(dragging)move(p);});for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,()=>dragging=false);
 const keys=new Set();addEventListener('keydown',e=>{if(!running||$('#dialog').open)return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','w','a','s','d'].includes(e.key)){e.preventDefault();keys.add(e.key);if(e.key===' '&&!e.repeat)arm();}});addEventListener('keyup',e=>keys.delete(e.key));addEventListener('blur',()=>{keys.clear();dragging=false;if(running&&!room)paused=true;});document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!room)paused=true;});
 function finish(){finished=true;room?.markFinished();let win=game.winner===playerIndex;beep(win?880:220,.4);dialog(`<div class="eyebrow">MATCH COMPLETE</div><h2>${win?'這一場，由你寫下。':'下一球，再扳回來。'}</h2><div class="room-code">${game.scores[playerIndex]} : ${game.scores[1-playerIndex]}</div><p style="text-align:center">${win?'漂亮的反彈！你贏得了這場對決。':'對手拿下了勝利，再試試不同夥伴與戰術。'}</p><button id="rematch" class="primary">${room?'回房間 · 選擇夥伴與競技場':'再來一局'}</button><button id="back-home" class="secondary">回首頁</button>`,false);$('#rematch').onclick=()=>{if(room)room.rematch();else start(game.config);};$('#back-home').onclick=home;}

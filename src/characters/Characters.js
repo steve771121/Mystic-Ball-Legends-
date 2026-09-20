@@ -1,4 +1,4 @@
-import * as T from '../../vendor/three.module.js?v=0.6.0';
+import * as T from '../../vendor/three.module.js?v=0.6.1';
 export function character(type='bear'){
  const g=new T.Group(),parts={};const colors={bear:[0xefadbf,0xffe0db],duck:[0xffda70,0xffefb4],cat:[0xa798e4,0xe2daff]},[base,light]=colors[type]||colors.bear;
  function ball(name,x,y,z,sx,sy,sz,color){let m=new T.Mesh(new T.SphereGeometry(1,24,16),new T.MeshStandardMaterial({color,roughness:.7}));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;g.add(m);parts[name]=m;return m;}
