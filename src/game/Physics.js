@@ -1,6 +1,6 @@
-import {portalState,updatePortals,enterPortal} from './Portals.js?v=0.5.0';
-import {roundCorner} from './Bounds.js?v=0.5.0';
-import {ARENAS,W,H,CORNER_RADIUS,GOAL,clamp,legalSkill,COOLDOWN} from '../config/game.js?v=0.5.0';
+import {portalState,updatePortals,enterPortal} from './Portals.js?v=0.5.1';
+import {roundCorner} from './Bounds.js?v=0.5.1';
+import {ARENAS,W,H,CORNER_RADIUS,GOAL,clamp,legalSkill,COOLDOWN} from '../config/game.js?v=0.5.1';
 const mallet=side=>({x:0,z:side*6.3,tx:0,tz:side*6.3,vx:0,vz:0,r:.62,side});
 export class Physics {
  constructor(config={}){this.config={arena:'classic',target:5,skills:true,characters:['bear','cat'],ai:true,difficulty:'normal',...config};this.arena=ARENAS[this.config.arena]||ARENAS.classic;this.t=0;this.scores=[0,0];this.players=[mallet(1),mallet(-1)];this.cooldowns=[0,0];this.skills=[null,null];this.puck={x:0,z:0,vx:0,vz:0,r:.27,held:-1};this.phase='countdown';this.wait=3;this.winner=-1;this.events=[];this.goalId=0;this.lastScorer=-1;this.serve=1;this.resetRound();}
