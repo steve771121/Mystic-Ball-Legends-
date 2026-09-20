@@ -1,5 +1,5 @@
-import {frilledLizard} from './FrilledLizard.js?v=0.5.2';
-import * as T from '../../vendor/three.module.js?v=0.5.2';
+import {frilledLizard} from './FrilledLizard.js?v=0.6.0';
+import * as T from '../../vendor/three.module.js?v=0.6.0';
 // Fixed-size GPU particle pools; no textures, lights, or per-frame mesh creation.
 function particles(count,color,soft=false){
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(new Float32Array(count*3),3));geo.setAttribute('strength',new T.BufferAttribute(new Float32Array(count),1));geo.setAttribute('radius',new T.BufferAttribute(new Float32Array(count),1));
@@ -34,7 +34,15 @@ export class ArenaEffects {
  for(const name of ['position','strength','radius'])g.attributes[name].needsUpdate=true;
  }
  if(type==='space'){const elapsed=state.t-(state.impact?.t??-99),flash=state.phase==='playing'&&elapsed>=0?Math.max(0,1-elapsed/.42):0;puck.material.emissiveIntensity=1.5+flash*5;this.glow.visible=!state.puck.hidden&&flash>0;this.glow.position.copy(puck.position);this.glow.position.y=.455;this.glow.scale.setScalar(1+(1-flash)*.75);this.glow.material.uniforms.alpha.value=flash*.85;}
- for(const {lizard,ripple,i} of this.lizards){const phase=(t+i*3.7)%7.4,rise=phase<3.1?Math.pow(Math.sin(phase/3.1*Math.PI),1.3):0;lizard.visible=rise>.04;lizard.position.y=.44-(1-rise)*.8;lizard.userData.frill.scale.setScalar(.94+.06*Math.sin(t*3+i));lizard.rotation.z=Math.sin(t*2+i)*.07*rise;ripple.scale.setScalar(.8+((t*1.2+i)%1)*.55);ripple.material.opacity=rise*.35;}
+ for(const {lizard,ripple,i} of this.lizards){
+ const celebrate=state.phase==='goal'||state.phase==='over',phase=(t+i*3.7)%7.4,rise=celebrate?1:phase<3.1?Math.pow(Math.sin(phase/3.1*Math.PI),1.3):0;
+ lizard.visible=rise>.04;lizard.position.y=.44-(1-rise)*.8+(celebrate?Math.abs(Math.sin(t*9))*.1:0);
+ const dx=state.puck.x-lizard.position.x,dz=state.puck.z-lizard.position.z,near=!state.puck.hidden&&Math.hypot(dx,dz)<3.2,target=near?Math.atan2(dx,dz):(i?Math.PI:0);
+ const elapsed=Math.min(.05,Math.max(0,t-(lizard.userData.lastTime??t)));lizard.userData.lastTime=t;
+ const delta=Math.atan2(Math.sin(target-lizard.rotation.y),Math.cos(target-lizard.rotation.y));lizard.rotation.y+=delta*(1-Math.exp(-elapsed*7));
+ lizard.userData.frill.scale.setScalar(celebrate?1.25+.09*Math.sin(t*9):.86+.035*Math.sin(t*3+i));lizard.rotation.z=Math.sin(t*(celebrate?9:2)+i)*(celebrate?.12:.07)*rise;
+ ripple.scale.setScalar(.8+((t*1.2+i)%1)*.55);ripple.material.opacity=rise*(celebrate?.55:.35);
+ }
  if(this.streams){const k=Math.floor(state.t/6)%3,dx=k===2?Math.sin(state.t*1.4):0,dz=k===0?-1:k===1?1:0;const speed=Math.hypot(dx,dz),nx=speed>.001?dx/speed:1,nz=speed>.001?dz/speed:0;const p=this.streams.geometry.attributes.position.array;
  // Integral of the lateral sine matches the actual left/right force, including reversals.
  const travel=k===2?-Math.cos(state.t*1.4)*2:state.t*3;

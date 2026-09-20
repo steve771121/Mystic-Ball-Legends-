@@ -13,3 +13,6 @@ export const ARENAS = {
 export const W=10,H=16,CORNER_RADIUS=1.45,GOAL=3.4,STEP=1/240,COOLDOWN=14;
 export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export function legalSkill(x,z,side){return Number.isFinite(x)&&Number.isFinite(z)&&Math.abs(x)<=3.8 && z*side>=1.2 && z*side<=5.3 && Math.hypot(x,z-side*8)>2.7;}
+
+export const MALLET_SCALE=1.06;
+export const MALLET_RADIUS=.62*MALLET_SCALE;

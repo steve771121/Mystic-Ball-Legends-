@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b171d"><meta name="description" content="幻球傳奇：三位奇幻夥伴、五種立體球場，開啟你的氣墊球對決。"><title>幻球傳奇 / Mystic Ball Legends</title><link rel="stylesheet" href="./src/ui/style.css?v=0.5.2"></head>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b171d"><meta name="description" content="幻球傳奇：三位奇幻夥伴、五種立體球場，開啟你的氣墊球對決。"><title>幻球傳奇 / Mystic Ball Legends</title><link rel="stylesheet" href="./src/ui/style.css?v=0.6.0"></head>
 <body>
 <div id="scene" aria-label="立體氣墊球場"></div>
-<header><a class="brand" href="./"><span class="brand-icon">✦</span><span>幻球傳奇<small>MYSTIC BALL LEGENDS</small></span></a><div class="header-right"><span class="version">ALPHA 0.5.2</span><button class="icon-button" id="sound" aria-label="開啟音效">♪</button><button class="icon-button" id="help" aria-label="遊戲說明">?</button></div></header>
+<header><a class="brand" href="./"><span class="brand-icon">✦</span><span>幻球傳奇<small>MYSTIC BALL LEGENDS</small></span></a><div class="header-right"><span class="version">ALPHA 0.6.0</span><button class="icon-button" id="sound" aria-label="開啟音效">♪</button><button class="icon-button" id="help" aria-label="遊戲說明">?</button></div></header>
 <main id="menu">
 <div class="intro"><div class="eyebrow"><span></span> THE ARENA IS YOURS</div><h1>一球，<br>扭轉<span>全場。</span></h1><p>找一位奇幻夥伴。<br>把下一次反彈，變成你的傳奇。</p><div class="mode-tabs" role="group" aria-label="對戰模式"><button data-mode="ai" class="active">電腦練習</button><button data-mode="online">好友對戰</button><button data-mode="random">隨機配對</button></div><div id="mode-description">磨練你的擊球角度，隨時來一場。</div></div>
 <div class="arena-label"><span id="arena-en">CLASSIC ARENA</span><strong id="arena-title">經典競技場</strong><small>3D REAL-TIME AIR HOCKEY</small></div>
@@ -11,9 +11,9 @@
 </main>
 <section id="hud" hidden><div class="scoreboard"><div><small id="opponent-label">電腦對手</small><b id="opponent-score">0</b></div><span><small id="match-arena">經典競技場</small><strong>VS</strong><small id="match-rule">先得 5 分</small></span><div><small id="player-label">你 · 皮皮熊</small><b id="player-score">0</b></div></div><div class="game-controls"><button id="leave" class="icon-button" aria-label="離開對戰">↩</button><button id="pause" class="icon-button" aria-label="暫停">Ⅱ</button></div><div id="announcement" aria-live="polite"></div><div class="bottom-hud"><span id="hint">拖曳我方推盤擊球</span><button id="skill" class="skill-orb"><span id="skill-icon">🐻</span><span><b id="skill-name">彈性伸長</b><small id="skill-state">技能就緒 · 點擊放置</small></span><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="27"/></svg></button></div><div id="wind-label"></div><div id="network-label"></div></section>
 <dialog id="dialog"><button class="dialog-close" aria-label="關閉">×</button><div id="dialog-content"></div></dialog><div id="toast" role="status"></div><div id="loading"><span class="brand-icon">✦</span><p>正在喚醒競技場…</p></div>
-<script src="./vendor/peerjs.min.js?v=0.5.2" defer></script>
+<script src="./vendor/peerjs.min.js?v=0.6.0" defer></script>
 <script type="module">
-const RELEASE = '0.5.2';
+const RELEASE = '0.6.0';
 async function freshRelease(){
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),2500);
  try{
@@ -27,7 +27,7 @@ async function freshRelease(){
 }
 async function boot(){
  if(await freshRelease())return;
- try{await import('./src/main.js?v=0.5.2');}
+ try{await import('./src/main.js?v=0.6.0');}
  catch(e){console.error(e);const loading=document.querySelector('#loading');if(loading)loading.innerHTML='<p>無法載入 3D 競技場，請重新整理，或使用支援 WebGL 的瀏覽器。</p><button onclick="location.reload()">重新載入</button>';}
 }
 // Recheck restored menu tabs; never interrupt a live match or an open room.

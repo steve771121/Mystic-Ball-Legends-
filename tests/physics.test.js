@@ -1,7 +1,7 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {Physics} from '../src/game/Physics.js';import {STEP,legalSkill} from '../src/config/game.js';
+import test from 'node:test';import assert from 'node:assert/strict';import {Physics} from '../src/game/Physics.js';import {STEP,legalSkill,MALLET_RADIUS} from '../src/config/game.js';
 function play(config={}){let g=new Physics({ai:false,...config});g.phase='playing';return g;}
 function run(g,seconds){for(let t=0;t<seconds;t+=STEP)g.step(STEP);}
-test('countdown and finite input / half bounds',()=>{let g=new Physics({ai:false});g.input(0,100,-100);assert.equal(g.players[0].tx,4.35);assert.equal(g.players[0].tz,.72);g.input(0,NaN,5);assert.equal(g.players[0].tx,4.35);run(g,3.1);assert.equal(g.phase,'playing');});
+test('countdown and finite input / half bounds',()=>{let g=new Physics({ai:false});g.input(0,100,-100);assert.equal(g.players[0].tx,4.35-(MALLET_RADIUS-.62));assert.equal(g.players[0].tz,.72);g.input(0,NaN,5);assert.equal(g.players[0].tx,4.35-(MALLET_RADIUS-.62));run(g,3.1);assert.equal(g.phase,'playing');});
 test('whole puck crossing scores exactly once and produces a winner',()=>{let g=play({target:3});g.scores[0]=2;Object.assign(g.puck,{x:0,z:-8.2,vz:-20});run(g,.1);assert.deepEqual(g.scores,[3,0]);assert.equal(g.phase,'over');assert.equal(g.winner,0);run(g,5);assert.equal(g.scores[0],3);});
 test('wall and goalpost reject out-of-mouth shots',()=>{let g=play();Object.assign(g.puck,{x:2.2,z:-7.5,vz:-20});run(g,.05);assert.equal(g.scores[0],0);assert.ok(g.puck.vz>0);let h=play();Object.assign(h.puck,{x:1.65,z:-7.5,vz:-20});run(h,.05);assert.equal(h.scores[0],0);assert.ok(h.puck.z>-8);});
 test('maximum speed puck does not tunnel through mallet',()=>{let g=play();Object.assign(g.players[0],{x:0,z:3,tx:0,tz:3});Object.assign(g.puck,{x:0,z:1,vz:28});run(g,.1);assert.ok(g.puck.vz<0);});

@@ -1,5 +1,5 @@
-import * as T from '../../vendor/three.module.js?v=0.5.2';
-import {ARENAS,GOAL,CORNER_RADIUS} from '../config/game.js?v=0.5.2';
+import * as T from '../../vendor/three.module.js?v=0.6.0';
+import {ARENAS,GOAL,CORNER_RADIUS,MALLET_SCALE} from '../config/game.js?v=0.6.0';
 export function arena(type){const group=new T.Group(),cfg=ARENAS[type];
  const material=(color,metalness=.4,roughness=.3)=>new T.MeshStandardMaterial({color,metalness,roughness});
  const glow=color=>new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.7,roughness:.3});
@@ -20,4 +20,4 @@ export function arena(type){const group=new T.Group(),cfg=ARENAS[type];
  if(type==='ice'){for(let i=0;i<14;i++){let m=box(.018,.014,1.2+Math.random()*1.5,(Math.random()-.5)*9,.442,(Math.random()-.5)*14,line);m.rotation.y=Math.random()*6;}}
  const wind=new T.Group();
  return {group,wind};}
-export function mallet(color){let g=new T.Group();for(let [rt,rb,h,y,c] of [[.62,.68,.19,0,color],[.43,.5,.27,.2,color],[.24,.3,.19,.42,0xeaf5ed]]){let m=new T.Mesh(new T.CylinderGeometry(rt,rb,h,40),new T.MeshPhysicalMaterial({color:c,metalness:.55,roughness:.22,clearcoat:1}));m.position.y=y;m.castShadow=true;g.add(m);}let halo=new T.Mesh(new T.TorusGeometry(.6,.035,8,48),new T.MeshBasicMaterial({color}));halo.rotation.x=Math.PI/2;halo.position.y=-.06;g.add(halo);return g;}
+export function mallet(color){let g=new T.Group();for(let [rt,rb,h,y,c] of [[.62,.68,.19,0,color],[.43,.5,.27,.2,color],[.24,.3,.19,.42,0xeaf5ed]]){let m=new T.Mesh(new T.CylinderGeometry(rt,rb,h,40),new T.MeshPhysicalMaterial({color:c,metalness:.55,roughness:.22,clearcoat:1}));m.position.y=y;m.castShadow=true;g.add(m);}let halo=new T.Mesh(new T.TorusGeometry(.6,.035,8,48),new T.MeshBasicMaterial({color}));halo.rotation.x=Math.PI/2;halo.position.y=-.06;g.add(halo);g.scale.set(MALLET_SCALE,1,MALLET_SCALE);return g;}
