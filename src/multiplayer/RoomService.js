@@ -1,4 +1,4 @@
-import {ARENAS} from '../config/game.js?v=0.6.1';
+import {ARENAS} from '../config/game.js?v=0.7.0';
 // PeerJS provides signaling only. The host owns physics; guests send bounded input.
 // Public signaling + WebRTC is experimental: restrictive NAT may require TURN.
 const PREFIX='mbl-06-';
