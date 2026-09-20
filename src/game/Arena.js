@@ -1,5 +1,5 @@
-import * as T from '../../vendor/three.module.js?v=0.4.0';
-import {ARENAS,GOAL,CORNER_RADIUS} from '../config/game.js?v=0.4.0';
+import * as T from '../../vendor/three.module.js?v=0.5.0';
+import {ARENAS,GOAL,CORNER_RADIUS} from '../config/game.js?v=0.5.0';
 export function arena(type){const group=new T.Group(),cfg=ARENAS[type];
  const material=(color,metalness=.4,roughness=.3)=>new T.MeshStandardMaterial({color,metalness,roughness});
  const glow=color=>new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.7,roughness:.3});
@@ -18,6 +18,6 @@ export function arena(type){const group=new T.Group(),cfg=ARENAS[type];
  const dots=new T.InstancedMesh(new T.CircleGeometry(.012,4),line,640);let index=0;let dummy=new T.Object3D();dummy.rotation.x=-Math.PI/2;for(let x=-4.5;x<5;x+=.5)for(let z=-7.5;z<8;z+=.5){if(Math.abs(x)>5-R&&Math.abs(z)>8-R&&Math.hypot(Math.abs(x)-(5-R),Math.abs(z)-(8-R))>R-.04)continue;dummy.position.set(x,.433,z);dummy.updateMatrix();dots.setMatrixAt(index++,dummy.matrix);}dots.count=index;group.add(dots);
  if(type==='desert'){for(let [x,z] of [[-2.4,2],[2.4,-2]]){ring(1.25,1.25,x,z,0xb79257,.7);for(let j=0;j<4;j++)ring(.3+j*.27,.02,x,z,0xe4c282,.7);}}
  if(type==='ice'){for(let i=0;i<14;i++){let m=box(.018,.014,1.2+Math.random()*1.5,(Math.random()-.5)*9,.442,(Math.random()-.5)*14,line);m.rotation.y=Math.random()*6;}}
- const wind=new T.Group();group.add(wind);if(type==='wind')for(let i=0;i<28;i++){let m=box(.025,.02,.42,(Math.random()-.5)*9,.5,Math.random()*16-8,new T.MeshBasicMaterial({color:0xd9ffc6,transparent:true,opacity:.55}));group.remove(m);wind.add(m);}
+ const wind=new T.Group();
  return {group,wind};}
 export function mallet(color){let g=new T.Group();for(let [rt,rb,h,y,c] of [[.62,.68,.19,0,color],[.43,.5,.27,.2,color],[.24,.3,.19,.42,0xeaf5ed]]){let m=new T.Mesh(new T.CylinderGeometry(rt,rb,h,40),new T.MeshPhysicalMaterial({color:c,metalness:.55,roughness:.22,clearcoat:1}));m.position.y=y;m.castShadow=true;g.add(m);}let halo=new T.Mesh(new T.TorusGeometry(.6,.035,8,48),new T.MeshBasicMaterial({color}));halo.rotation.x=Math.PI/2;halo.position.y=-.06;g.add(halo);return g;}

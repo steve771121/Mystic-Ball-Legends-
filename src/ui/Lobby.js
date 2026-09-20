@@ -1,4 +1,4 @@
-import {CHARACTERS,ARENAS} from '../config/game.js?v=0.4.0';
+import {CHARACTERS,ARENAS} from '../config/game.js?v=0.5.0';
 export function renderLobby(container,info,{pics,onCharacter,onArena,onReady,onLeave}){
  const me=info.host?0:1,chosen=info.characters[me];
  container.innerHTML=`<div class="eyebrow">${info.round?'NEXT MATCH':'FRIENDS LOBBY'}</div><h2>${info.round?'再來一局':info.connected?'對手已抵達':'等待另一位傳奇'}</h2>

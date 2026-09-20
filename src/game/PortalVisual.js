@@ -1,4 +1,4 @@
-import * as T from '../../vendor/three.module.js?v=0.4.0';
+import * as T from '../../vendor/three.module.js?v=0.5.0';
 export function portalVisual(){
  const root=new T.Group();
  for(let i=0;i<2;i++){
