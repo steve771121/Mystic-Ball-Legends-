@@ -1,4 +1,4 @@
-import * as T from '../../vendor/three.module.js?v=0.5.1';
+import * as T from '../../vendor/three.module.js?v=0.5.2';
 // Face points upward so the expression reads clearly from the playing camera.
 export function frilledLizard(){
  const root=new T.Group(),frill=new T.Group();root.add(frill);

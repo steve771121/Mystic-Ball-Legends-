@@ -1,4 +1,4 @@
-import {W,H,CORNER_RADIUS} from '../config/game.js?v=0.5.1';
+import {W,H,CORNER_RADIUS} from '../config/game.js?v=0.5.2';
 // Shared with arena geometry: circles tangent to the straight rails.
 export function roundCorner(body, reflect=false){
  const sx=Math.sign(body.x)||1,sz=Math.sign(body.z)||1;
