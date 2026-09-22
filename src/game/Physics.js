@@ -1,6 +1,6 @@
-import {portalState,updatePortals,enterPortal} from './Portals.js?v=0.7.1';
-import {roundCorner} from './Bounds.js?v=0.7.1';
-import {ARENAS,W,H,MALLET_RADIUS,CORNER_RADIUS,GOAL,clamp,legalSkill,COOLDOWN} from '../config/game.js?v=0.7.1';
+import {portalState,updatePortals,enterPortal} from './Portals.js?v=0.7.2';
+import {roundCorner} from './Bounds.js?v=0.7.2';
+import {ARENAS,W,H,MALLET_RADIUS,CORNER_RADIUS,GOAL,clamp,legalSkill,COOLDOWN} from '../config/game.js?v=0.7.2';
 const mallet=side=>({x:0,z:side*6.3,tx:0,tz:side*6.3,vx:0,vz:0,r:MALLET_RADIUS,side});
 export class Physics {
  constructor(config={}){this.config={arena:'classic',target:5,skills:true,characters:['bear','cat'],ai:true,difficulty:'normal',...config};this.arena=ARENAS[this.config.arena]||ARENAS.classic;this.t=0;this.impactSeq=0;this.scores=[0,0];this.players=[mallet(1),mallet(-1)];this.cooldowns=[0,0];this.skills=[null,null];this.puck={x:0,z:0,vx:0,vz:0,r:.27,held:-1};this.phase='countdown';this.wait=3;this.winner=-1;this.events=[];this.goalId=0;this.lastScorer=-1;this.serve=1;this.resetRound();}
@@ -28,7 +28,7 @@ export class Physics {
  if(Math.abs(p.x)<=GOAL/2-p.r&&Math.abs(p.z)>8+p.r){let i=p.z<0?0:1;this.scores[i]++;this.lastScorer=i;this.goalId++;this.portals=portalState();this.events.push({type:'goal',i});this.skills=[null,null];p.held=-1;this.serve=i===0?1:-1;if(this.scores[i]>=this.config.target){this.phase='over';this.winner=i;}else{this.phase='goal';this.wait=1.5;}return;}
  let speed=Math.hypot(p.vx,p.vz);if(speed>this.arena.max){p.vx*=this.arena.max/speed;p.vz*=this.arena.max/speed;}if(p.held<0&&speed<1.2){p.vz+=this.serve*dt*.9;}
  }
- recordImpact(type,speed){this.impact={id:++this.impactSeq,t:this.t,type,strength:clamp(speed/22,0,1),x:this.puck.x,z:this.puck.z};}
+ recordImpact(type,speed){this.impact={id:++this.impactSeq,t:this.t,type,strength:clamp(speed/22,0,1),x:this.puck.x,z:this.puck.z,vx:this.puck.vx,vz:this.puck.vz};}
  recordWall(speed=Math.hypot(this.puck.vx,this.puck.vz)){this.recordImpact('wall',speed);}
  inSand(p){return Math.hypot(p.x+2.4,p.z-2)<1.25||Math.hypot(p.x-2.4,p.z+2)<1.25;}
  snapshot(){return {impact:this.impact,portals:this.portals,t:this.t,scores:this.scores,players:this.players,puck:this.puck,skills:this.skills,cooldowns:this.cooldowns,phase:this.phase,wait:this.wait,winner:this.winner,goalId:this.goalId,lastScorer:this.lastScorer};}

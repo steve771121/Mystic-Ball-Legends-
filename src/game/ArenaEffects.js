@@ -1,5 +1,5 @@
-import {frilledLizard} from './FrilledLizard.js?v=0.7.1';
-import * as T from '../../vendor/three.module.js?v=0.7.1';
+import {frilledLizard} from './FrilledLizard.js?v=0.7.2';
+import * as T from '../../vendor/three.module.js?v=0.7.2';
 // Fixed-size GPU particle pools; no textures, lights, or per-frame mesh creation.
 function particles(count,color,soft=false){
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(new Float32Array(count*3),3));geo.setAttribute('strength',new T.BufferAttribute(new Float32Array(count),1));geo.setAttribute('radius',new T.BufferAttribute(new Float32Array(count),1));

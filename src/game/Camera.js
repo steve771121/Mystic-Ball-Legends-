@@ -1,4 +1,4 @@
-import * as T from '../../vendor/three.module.js?v=0.7.1';
+import * as T from '../../vendor/three.module.js?v=0.7.2';
 // Fit the physical table and both goals, not the decorative sideline characters.
 export function playCamera(width,height,side=1){
  const aspect=width/height,portrait=aspect<1;

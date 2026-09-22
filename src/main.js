@@ -1,11 +1,11 @@
-import {Music,MUSIC_TRACKS} from './audio/Music.js?v=0.7.1';
-import {renderLobby} from './ui/Lobby.js?v=0.7.1';
-import * as T from '../vendor/three.module.js?v=0.7.1';
-import {CHARACTERS,ARENAS,STEP,COOLDOWN,clamp} from './config/game.js?v=0.7.1';
-import {character} from './characters/Characters.js?v=0.7.1';
-import {Physics} from './game/Physics.js?v=0.7.1';
-import {Scene} from './game/Scene.js?v=0.7.1';
-import {RoomService} from './multiplayer/RoomService.js?v=0.7.1';
+import {Music,MUSIC_TRACKS} from './audio/Music.js?v=0.7.2';
+import {renderLobby} from './ui/Lobby.js?v=0.7.2';
+import * as T from '../vendor/three.module.js?v=0.7.2';
+import {CHARACTERS,ARENAS,STEP,COOLDOWN,clamp} from './config/game.js?v=0.7.2';
+import {character} from './characters/Characters.js?v=0.7.2';
+import {Physics} from './game/Physics.js?v=0.7.2';
+import {Scene} from './game/Scene.js?v=0.7.2';
+import {RoomService} from './multiplayer/RoomService.js?v=0.7.2';
 const $=s=>document.querySelector(s);let selected='bear',arena='classic',mode='ai',running=false,armed=false,dragging=false,room=null,playerIndex=0,paused=false,finished=false,lastGoal=0,lastImpactId=0,accumulator=0,last=performance.now(),sendClock=0,frameTime=0,sound=false,audio=null,disconnectShown=false;
 const music=new Music({onChange:updateMusicButton,onError:()=>toast('音樂暫時無法播放，請再點一次音樂按鈕。')});
 function updateMusicButton(){const b=$('#music');b.classList.toggle('is-muted',!music.enabled);b.setAttribute('aria-pressed',String(music.enabled));b.setAttribute('aria-label',music.enabled?'關閉背景音樂':'開啟背景音樂');b.title=MUSIC_TRACKS[music.arena]?(music.enabled?'背景音樂已開啟':'背景音樂已關閉'):'此場地尚未加入背景音樂';}
@@ -17,7 +17,10 @@ function toast(text){$('#toast').textContent=text;$('#toast').style.display='blo
 function beep(freq=440,duration=.07){if(!sound)return;try{audio??=new AudioContext();audio.resume();let o=audio.createOscillator(),g=audio.createGain();o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.055,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+duration);}catch{}}
 function impactSound(e){if(!sound||frameTime-(impactSound.last??-1)<.045)return;impactSound.last=frameTime;try{audio??=new AudioContext();audio.resume();const wall=e.type==='wall',heavy=!wall&&e.strength>.65,start=audio.currentTime,duration=wall?.065:heavy?.14:.075;
  const tone=(freq,end,volume,type)=>{const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,start);o.frequency.exponentialRampToValueAtTime(end,start+duration);g.gain.setValueAtTime(.001,start);g.gain.linearRampToValueAtTime(volume,start+.003);g.gain.exponentialRampToValueAtTime(.001,start+duration);o.connect(g).connect(audio.destination);o.onended=()=>{o.disconnect();g.disconnect();};o.start(start);o.stop(start+duration);};
- tone(wall?780:heavy?220:440,wall?390:heavy?75:260,.025+e.strength*.055,wall?'sine':'triangle');if(heavy)tone(1100,440,.018,'sine');}catch{}}
+ tone(wall?780:heavy?220:440,wall?390:heavy?75:260,.025+e.strength*.055,wall?'sine':'triangle');if(!wall){tone(1500,650,.012+e.strength*.014,'sine');}if(heavy){tone(125,48,.045,'sine');
+ // Short filtered air layer; independent from the music channel.
+ impactSound.noise??=(()=>{const b=audio.createBuffer(1,Math.ceil(audio.sampleRate*.12),audio.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;})();
+ const n=audio.createBufferSource(),filter=audio.createBiquadFilter(),g=audio.createGain();n.buffer=impactSound.noise;filter.type='bandpass';filter.Q.value=.7;filter.frequency.setValueAtTime(2200,start);filter.frequency.exponentialRampToValueAtTime(700,start+.12);g.gain.setValueAtTime(.001,start);g.gain.linearRampToValueAtTime(.035*e.strength,start+.018);g.gain.exponentialRampToValueAtTime(.001,start+.12);n.connect(filter).connect(g).connect(audio.destination);n.onended=()=>{n.disconnect();filter.disconnect();g.disconnect();};n.start(start);n.stop(start+.12);}}catch{}}
 function portraits(){let r=new T.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(180,180);r.setPixelRatio(1);let s=new T.Scene(),c=new T.PerspectiveCamera(35,1,.1,20);c.position.set(2.1,2.1,4.4);c.lookAt(0,.9,0);s.add(new T.HemisphereLight(0xffffff,0x66576f,3));let l=new T.DirectionalLight(0xffffff,4);l.position.set(-3,5,5);s.add(l);let result={};for(let type of Object.keys(CHARACTERS)){let g=character(type);s.add(g);r.render(s,c);result[type]=r.domElement.toDataURL();s.remove(g);g.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});}r.dispose();return result;}
 const pics=portraits();
 $('#characters').innerHTML=Object.entries(CHARACTERS).map(([id,c])=>`<button class="char-card ${id===selected?'active':''}" data-char="${id}" aria-pressed="${id===selected}"><img class="portrait" src="${pics[id]}" alt="${c.name} 3D 角色"><span><b>${c.name}</b><small>${c.en}</small><p>${c.title} · ${c.role}</p></span><span class="check">✓</span></button>`).join('');
@@ -47,7 +50,7 @@ function arm(){if(!running||paused||game.phase!=='playing'||!game.config.skills|
 $('#skill').onclick=arm;
 const canvas=view.renderer.domElement;
 function move(p){if(room&&!room.host)room.send({type:'input',x:p.x,z:p.z});else game.input(playerIndex,p.x,p.z);}
-canvas.addEventListener('pointerdown',e=>{if(!running||paused||game.phase!=='playing')return;let p=view.point(e);if(!p)return;if(armed){if(room&&!room.host){import('./config/game.js?v=0.7.1').then(({legalSkill})=>{if(!legalSkill(p.x,p.z,-1)){toast('請放在綠色合法區域，避開球門');return;}room.send({type:'skill',x:p.x,z:p.z});armed=false;view.placement(false);});}else if(game.activate(playerIndex,p.x,p.z)){armed=false;view.placement(false);beep(780);}else toast('請放在綠色合法區域，避開球門');return;}dragging=true;canvas.setPointerCapture(e.pointerId);move(p);});
+canvas.addEventListener('pointerdown',e=>{if(!running||paused||game.phase!=='playing')return;let p=view.point(e);if(!p)return;if(armed){if(room&&!room.host){import('./config/game.js?v=0.7.2').then(({legalSkill})=>{if(!legalSkill(p.x,p.z,-1)){toast('請放在綠色合法區域，避開球門');return;}room.send({type:'skill',x:p.x,z:p.z});armed=false;view.placement(false);});}else if(game.activate(playerIndex,p.x,p.z)){armed=false;view.placement(false);beep(780);}else toast('請放在綠色合法區域，避開球門');return;}dragging=true;canvas.setPointerCapture(e.pointerId);move(p);});
 canvas.addEventListener('pointermove',e=>{if(!running||paused)return;let p=view.point(e);if(!p)return;if(armed)view.placement(true,p);else if(dragging)move(p);});for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,()=>dragging=false);
 const keys=new Set();addEventListener('keydown',e=>{if(!running||$('#dialog').open)return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','w','a','s','d'].includes(e.key)){e.preventDefault();keys.add(e.key);if(e.key===' '&&!e.repeat)arm();}});addEventListener('keyup',e=>keys.delete(e.key));addEventListener('blur',()=>{keys.clear();dragging=false;if(running&&!room)paused=true;});document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!room)paused=true;});
 function finish(){finished=true;room?.markFinished();let win=game.winner===playerIndex;beep(win?880:220,.4);dialog(`<div class="eyebrow">MATCH COMPLETE</div><h2>${win?'這一場，由你寫下。':'下一球，再扳回來。'}</h2><div class="room-code">${game.scores[playerIndex]} : ${game.scores[1-playerIndex]}</div><p style="text-align:center">${win?'漂亮的反彈！你贏得了這場對決。':'對手拿下了勝利，再試試不同夥伴與戰術。'}</p><button id="rematch" class="primary">${room?'回房間 · 選擇夥伴與競技場':'再來一局'}</button><button id="back-home" class="secondary">回首頁</button>`,false);$('#rematch').onclick=()=>{if(room)room.rematch();else start(game.config);};$('#back-home').onclick=home;}
